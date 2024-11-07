@@ -1,21 +1,24 @@
 #!/bin/bash
 
-# Update the system
+# Variables
+NEXUS_VERSION="3.74.0-01"  # Nexus version to install
+NEXUS_DATA_DIR="/data/nexus-data"  # Custom Nexus data directory
+
+# Update system packages
 echo "Updating system packages..."
 sudo dnf update -y
 
-# Install Java (Nexus requires Java 8 or higher)
-echo "Installing Java..."
-sudo dnf install java-11-openjdk -y
+# Install Java 11 (required for Nexus 3.74.0)
+echo "Installing Java 11..."
+sudo dnf install -y java-11-openjdk
 
-# Create a user for Nexus
+# Create a user for Nexus without login privileges
 echo "Creating nexus user..."
-sudo useradd -M -d /opt/nexus -s /bin/bash nexus
+sudo useradd -M -d /opt/nexus -s /bin/nologin nexus
 
 # Download Nexus Repository OSS version 3.74.0
 echo "Downloading Nexus Repository..."
 cd /tmp
-NEXUS_VERSION="3.74.0-01"  # Version specified
 wget https://download.sonatype.com/nexus/3/nexus-${NEXUS_VERSION}-unix.tar.gz
 
 # Extract Nexus to /opt directory
@@ -23,13 +26,22 @@ echo "Extracting Nexus..."
 sudo tar -zxvf nexus-${NEXUS_VERSION}-unix.tar.gz -C /opt
 sudo mv /opt/nexus-${NEXUS_VERSION} /opt/nexus
 
-# Set permissions
-echo "Setting permissions for Nexus..."
+# Create custom data directory
+echo "Creating custom data directory at ${NEXUS_DATA_DIR}..."
+sudo mkdir -p ${NEXUS_DATA_DIR}
+sudo chown -R nexus:nexus ${NEXUS_DATA_DIR}
+
+# Configure Nexus to use custom data directory
+echo "Configuring Nexus to use custom data directory..."
+echo "-Dkaraf.data=${NEXUS_DATA_DIR}" | sudo tee -a /opt/nexus/bin/nexus.vmoptions
+
+# Set permissions for nexus user
+echo "Setting permissions for Nexus directories..."
 sudo chown -R nexus:nexus /opt/nexus
 sudo chown -R nexus:nexus /opt/sonatype-work
 
-# Configure Nexus to run as a service
-echo "Configuring Nexus as a service..."
+# Configure Nexus to run as a systemd service
+echo "Configuring Nexus as a systemd service..."
 sudo tee /etc/systemd/system/nexus.service > /dev/null <<EOL
 [Unit]
 Description=Nexus Repository Manager
@@ -47,7 +59,7 @@ LimitNOFILE=65536
 WantedBy=multi-user.target
 EOL
 
-# Enable and start the Nexus service
+# Set Nexus to start on boot and enable the service
 echo "Enabling and starting Nexus service..."
 sudo systemctl enable nexus
 sudo systemctl start nexus
@@ -56,9 +68,9 @@ sudo systemctl start nexus
 echo "Checking Nexus status..."
 sudo systemctl status nexus
 
-# Print the Nexus URL
-echo "Nexus Repository Manager is installed and running."
+# Print Nexus URL for user access
+echo "Nexus Repository Manager 3.74.0 is installed and running."
 echo "Access it at: http://<your_server_ip>:8081"
 
-# Cleanup
+# Cleanup downloaded files
 rm /tmp/nexus-${NEXUS_VERSION}-unix.tar.gz
