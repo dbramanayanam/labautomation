@@ -33,7 +33,7 @@ fi
 ## Downloading Nexus
 yum install https://kojipkgs.fedoraproject.org/packages/python-html2text/2016.9.19/1.el7/noarch/python2-html2text-2016.9.19-1.el7.noarch.rpm -y &>/dev/null
 #URL=$(curl -L -s https://help.sonatype.com/display/NXRM3/Download+Archives+-+Repository+Manager+3 | html2text | grep tar.gz | sed -e 's/>//g' -e 's/<//g' | grep ^http|head -1 | awk '{print $1}')
-URL="https://download.sonatype.com/nexus/3/nexus-3.70.0-03-java8-unix.tar.gz"
+URL="https://download.sonatype.com/nexus/3/nexus-3.68.1-02-java8-unix.tar.gz"
 NEXUSFILE=$(echo $URL | awk -F '/' '{print $NF}')
 NEXUSDIR=$(echo $NEXUSFILE|sed -e 's/-unix.tar.gz//')
 NEXUSFILE="/opt/$NEXUSFILE"
