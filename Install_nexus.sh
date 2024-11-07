@@ -14,7 +14,7 @@ sudo dnf install -y java-11-openjdk
 
 # Create a user for Nexus without login privileges
 echo "Creating nexus user..."
-sudo useradd -M -d /opt/nexus -s /bin/nologin nexus
+sudo useradd -M -d /tmp/nexus -s /bin/nologin nexus
 
 # Download Nexus Repository OSS version 3.74.0
 echo "Downloading Nexus Repository..."
@@ -24,7 +24,7 @@ wget https://download.sonatype.com/nexus/3/nexus-${NEXUS_VERSION}-unix.tar.gz
 # Extract Nexus to /opt directory
 echo "Extracting Nexus..."
 sudo tar -zxvf nexus-${NEXUS_VERSION}-unix.tar.gz -C /opt
-sudo mv /opt/nexus-${NEXUS_VERSION} /opt/nexus
+sudo mv /tmp/nexus-${NEXUS_VERSION} /tmp/nexus
 
 # Create custom data directory
 echo "Creating custom data directory at ${NEXUS_DATA_DIR}..."
@@ -33,12 +33,12 @@ sudo chown -R nexus:nexus ${NEXUS_DATA_DIR}
 
 # Configure Nexus to use custom data directory
 echo "Configuring Nexus to use custom data directory..."
-echo "-Dkaraf.data=${NEXUS_DATA_DIR}" | sudo tee -a /opt/nexus/bin/nexus.vmoptions
+echo "-Dkaraf.data=${NEXUS_DATA_DIR}" | sudo tee -a /tmp/nexus/bin/nexus.vmoptions
 
 # Set permissions for nexus user
 echo "Setting permissions for Nexus directories..."
-sudo chown -R nexus:nexus /opt/nexus
-sudo chown -R nexus:nexus /opt/sonatype-work
+sudo chown -R nexus:nexus /tmp/nexus
+sudo chown -R nexus:nexus /tmp/sonatype-work
 
 # Configure Nexus to run as a systemd service
 echo "Configuring Nexus as a systemd service..."
